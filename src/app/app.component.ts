@@ -43,7 +43,7 @@ export class AppComponent implements OnInit {
   // Messages will only be displayable once a user selects a channel or clicks on the "Read more" buttons and therefore real-time message updates are
   // not supported. The user would need to refresh the page and reselect or simply change channels and come back to see if there are any new messages.
   // Ideally we can solve this if the back end supports graphql subscriptions or with websockets otherwise with the back end as is now the only solution
-  // would be to constantly poll with periodical query requests to the server to check if there are new messages. 
+  // would be to constantly poll with periodical query requests to the server to check if there are new messages. This project uses polling every 0.5secs.
   ngOnInit(): void {
     this.chatService.loading.subscribe(loading => {
       if (loading) {
@@ -150,7 +150,7 @@ export class AppComponent implements OnInit {
       const { messageId } = this.chatService.messages
         .getValue()
         .slice()
-        .sort((a, b) => a.datetime.localeCompare(b.datetime))
+        .sort((a, b) => b.datetime.localeCompare(a.datetime))
         .find(msg => msg?.messageId) || {}
       messageId && this.chatService.fetchMoreMessages(this.channelId.getRawValue(), messageId, old)
     }
@@ -159,5 +159,15 @@ export class AppComponent implements OnInit {
   shouldDisableOption(userId: string): boolean {
     let sessions = JSON.parse((localStorage.getItem('sessions') || '{}') as string) || {}
     return sessions?.[userId]?.isActive || this.activeUsers.includes(userId)
+  }
+
+  postMessage(): void {
+    this.chatService.loading.next(true)
+    this.chatService.postMessage(
+      this.channelId.getRawValue(),
+      this.text.getRawValue().trim(),
+      this.userId.getRawValue()
+    )
+    this.text.setValue('')
   }
 }

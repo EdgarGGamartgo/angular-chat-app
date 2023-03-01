@@ -42,7 +42,7 @@ export class ChatService {
 
           if (fetchMoreMessages?.length) {
             // List msgs in ascening order (oldest datetime comes first, index 0). Backend is desc by default so this would be beter in the backend.
-            fetchMoreMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
+            fetchMoreMessages = fetchMoreMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
 
             // Current msgs are already asc sorted so depeding on the action (fetching older or newer msgs), the fetched msgs should be merged at the end
             // or the begining of the current msgs lists to stay congruent with datetimes.
@@ -77,6 +77,7 @@ export class ChatService {
   fetchLatestMessages(channelId: string) {
     this.apollo
       .watchQuery({
+        pollInterval: 500,
         query: gql`
           query FetchLatestMessages($channelId: String!) {
             fetchLatestMessages(channelId: $channelId) {
@@ -97,7 +98,7 @@ export class ChatService {
 
           if (fetchLatestMessages?.length) {
             // List msgs in ascening order (oldest datetime comes first, index 0). Backend is desc by default so this would be beter in the backend.
-            fetchLatestMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
+            fetchLatestMessages = fetchLatestMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
             this.messages.next(fetchLatestMessages)
             this.loading.next(false)
           } else if (!fetchLatestMessages?.length && !errors?.[0]?.extensions?.code) {
