@@ -12,8 +12,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.chatService.postMessage('2', 'Hello', 'Sam');
-    this.chatService.fetchLatestMessages('2');
-
+    //this.chatService.postMessage('2', 'Hola', 'Sam');
+    //this.chatService.fetchMoreMessages('2', '2727478494852740728', true);
+    //this.chatService.fetchLatestMessages('2');
   }
 }
