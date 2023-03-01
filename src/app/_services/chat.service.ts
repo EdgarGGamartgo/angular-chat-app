@@ -9,10 +9,11 @@ import { ChatMessage } from '../_models';
 })
 export class ChatService {
   public messages: BehaviorSubject<ChatMessage[]> = new BehaviorSubject([] as ChatMessage[]);
+  public loading: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   constructor(
     private apollo: Apollo,
-    private toastr: ToastrService
+    private toastr: ToastrService,
   ) { }
 
   // Should be called only when clicking on "Read More" buttons
@@ -56,11 +57,16 @@ export class ChatService {
                 ...fetchMoreMessages
               ])
             }
+            this.loading.next(false)
           } else if (errors?.[0]?.extensions?.code) {
+            this.loading.next(false)
             this.toastr.error("Couldn't load message, please retry.");
+          } else {
+            this.loading.next(false)
           }
         },
         error: () => {
+          this.loading.next(false)
           this.toastr.error("Couldn't load message, please retry.");
         },
         complete: () => {} 
@@ -93,20 +99,25 @@ export class ChatService {
             // List msgs in ascening order (oldest datetime comes first, index 0). Backend is desc by default so this would be beter in the backend.
             fetchLatestMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
             this.messages.next(fetchLatestMessages)
+            this.loading.next(false)
           } else if (!fetchLatestMessages?.length && !errors?.[0]?.extensions?.code) {
             // Reset the msgs UI panel each time the length is 0.
             this.messages.next([])
+            this.loading.next(false)
           } else if (errors?.[0]?.extensions?.code) {
             // Reset the msgs UI panel each time tan error occurs.
-            this.toastr.error("Couldn't load message, please retry.");
             this.messages.next([])
+            this.loading.next(false)
+            this.toastr.error("Couldn't load message, please retry.");
+          } else {
+            this.loading.next(false)
           }
         },
         error: () => {
           // Reset the msgs UI panel each time tan error occurs.
-          this.toastr.error("Couldn't load message, please retry.");
+          this.loading.next(false)
           this.messages.next([])
-
+          this.toastr.error("Couldn't load message, please retry.");
         },
         complete: () => {} 
       })
@@ -133,8 +144,10 @@ export class ChatService {
       next: ({ data }) => {
         const { postMessage, errors } = data as { postMessage: ChatMessage; errors: { extensions: { code: number; } }[] } || {};
 
-        if (postMessage?.userId) this.messages.next([ ...this.messages.getValue(), postMessage ])
-        else if (errors?.[0]?.extensions?.code) {
+        if (postMessage?.userId) {
+          this.messages.next([ ...this.messages.getValue(), postMessage ])
+          this.loading.next(false)
+        } else if (errors?.[0]?.extensions?.code) {
           // Unsent messages are not stored by the backend and therefore ignored by the fetching queries therefore only temporary unsent messages
           // are including in the current user session UI and will be deleted on a page reload. Persisting these unsent messages in the backend 
           // would be a better approach than trying to persist messages in the browser through localStorage for example.
@@ -143,6 +156,9 @@ export class ChatService {
             userId,
             datetime: new Date().toISOString()
           }])
+          this.loading.next(false)
+        } else {
+          this.loading.next(false)
         }
       },
       error: () => {
@@ -151,6 +167,7 @@ export class ChatService {
           userId,
           datetime: new Date().toISOString()
         }])
+        this.loading.next(false)
       },
       complete: () => {} 
     })

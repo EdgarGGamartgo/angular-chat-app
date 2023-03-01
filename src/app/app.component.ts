@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { pairwise, startWith } from 'rxjs';
 import { ChatService } from './_services/chat.service';
 import { formatTime } from './_utils';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-root',
@@ -33,15 +34,28 @@ export class AppComponent implements OnInit {
   text: FormControl = new FormControl('')
   activeUsers: string[] = []
 
-  constructor(public chatService: ChatService, private toastr: ToastrService) {}
+  constructor(
+    public chatService: ChatService,
+    private toastr: ToastrService,
+    private spinner: NgxSpinnerService
+  ) {}
 
   // Messages will only be displayable once a user selects a channel or clicks on the "Read more" buttons and therefore real-time message updates are
   // not supported. The user would need to refresh the page and reselect or simply change channels and come back to see if there are any new messages.
   // Ideally we can solve this if the back end supports graphql subscriptions or with websockets otherwise with the back end as is now the only solution
   // would be to constantly poll with periodical query requests to the server to check if there are new messages. 
   ngOnInit(): void {
+    this.chatService.loading.subscribe(loading => {
+      if (loading) {
+        this.spinner.show()
+      } else {
+        this.spinner.hide()
+      }
+    })
+
     this.channelId.valueChanges.subscribe((channelId) => {
       if (channelId && this.userId.getRawValue()) {
+        this.chatService.loading.next(true)
         this.chatService.fetchLatestMessages(channelId)
       }
     })
@@ -126,6 +140,7 @@ export class AppComponent implements OnInit {
   }
 
   fetchMoreMessages(old: boolean = false): void {
+    this.chatService.loading.next(true)
     if (old) {
       // Find first sent msg from available messages in ascening order (oldest datetime comes first, index 0)
       const { messageId } = this.chatService.messages.getValue().find(msg => msg?.messageId) || {}
