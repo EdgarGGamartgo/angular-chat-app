@@ -1,18 +1,19 @@
-import { Component } from '@angular/core';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Component, OnInit } from '@angular/core';
+import { ChatService } from './_services/chat.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  constructor(private modalService: NgbModal) {
+  constructor(private chatService: ChatService) {
   }
 
-  public open(modal: any): void {
-    this.modalService.open(modal);
-  }
+  ngOnInit(): void {
+    this.chatService.postMessage('2', 'Hello', 'Sam');
+    this.chatService.fetchLatestMessages('2');
 
+  }
 }
