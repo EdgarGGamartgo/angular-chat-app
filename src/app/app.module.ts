@@ -8,12 +8,18 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { GraphQLModule } from './graphql.module';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastrModule } from 'ngx-toastr';
+import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 @NgModule({
   declarations: [
     AppComponent
   ],
   imports: [
+    BrowserAnimationsModule,
+    FormsModule,
+    ReactiveFormsModule,
     BrowserModule,
     NgbModule,
     AppRoutingModule,

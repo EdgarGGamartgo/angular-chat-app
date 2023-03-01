@@ -15,6 +15,7 @@ export class ChatService {
     private toastr: ToastrService
   ) { }
 
+  // Should be called only when clicking on "Read More" buttons
   fetchMoreMessages(channelId: string, messageId: string, old: boolean) {
     this.apollo
       .watchQuery({
@@ -36,9 +37,14 @@ export class ChatService {
       })
       .valueChanges.subscribe({
         next: ({ data, loading, error }) => {
-          const { fetchMoreMessages, errors } = data as { fetchMoreMessages: ChatMessage[]; errors: { extensions: { code: number; } }[] } || {};
+          let { fetchMoreMessages, errors } = data as { fetchMoreMessages: ChatMessage[]; errors: { extensions: { code: number; } }[] } || {};
 
           if (fetchMoreMessages?.length) {
+            // List msgs in ascening order (oldest datetime comes first, index 0). Backend is desc by default so this would be beter in the backend.
+            fetchMoreMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
+
+            // Current msgs are already asc sorted so depeding on the action (fetching older or newer msgs), the fetched msgs should be merged at the end
+            // or the begining of the current msgs lists to stay congruent with datetimes.
             if (old) {
               this.messages.next([
                 ...fetchMoreMessages,
@@ -61,6 +67,7 @@ export class ChatService {
       })
   }
 
+  // This should be called each time a user changes channel
   fetchLatestMessages(channelId: string) {
     this.apollo
       .watchQuery({
@@ -80,19 +87,26 @@ export class ChatService {
       })
       .valueChanges.subscribe({
         next: ({ data, loading, error }) => {
-          const { fetchLatestMessages, errors } = data as { fetchLatestMessages: ChatMessage[]; errors: { extensions: { code: number; } }[] } || {};
+          let { fetchLatestMessages, errors } = data as { fetchLatestMessages: ChatMessage[]; errors: { extensions: { code: number; } }[] } || {};
 
           if (fetchLatestMessages?.length) {
-            this.messages.next([
-              ...this.messages.getValue(),
-              ...fetchLatestMessages
-            ])
+            // List msgs in ascening order (oldest datetime comes first, index 0). Backend is desc by default so this would be beter in the backend.
+            fetchLatestMessages.slice().sort((a, b) => a.datetime.localeCompare(b.datetime))
+            this.messages.next(fetchLatestMessages)
+          } else if (!fetchLatestMessages?.length && !errors?.[0]?.extensions?.code) {
+            // Reset the msgs UI panel each time the length is 0.
+            this.messages.next([])
           } else if (errors?.[0]?.extensions?.code) {
+            // Reset the msgs UI panel each time tan error occurs.
             this.toastr.error("Couldn't load message, please retry.");
+            this.messages.next([])
           }
         },
         error: () => {
+          // Reset the msgs UI panel each time tan error occurs.
           this.toastr.error("Couldn't load message, please retry.");
+          this.messages.next([])
+
         },
         complete: () => {} 
       })
@@ -121,6 +135,9 @@ export class ChatService {
 
         if (postMessage?.userId) this.messages.next([ ...this.messages.getValue(), postMessage ])
         else if (errors?.[0]?.extensions?.code) {
+          // Unsent messages are not stored by the backend and therefore ignored by the fetching queries therefore only temporary unsent messages
+          // are including in the current user session UI and will be deleted on a page reload. Persisting these unsent messages in the backend 
+          // would be a better approach than trying to persist messages in the browser through localStorage for example.
           this.messages.next([ ...this.messages.getValue(), {
             text,
             userId,
