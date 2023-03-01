@@ -7,6 +7,47 @@
     margin-bottom: 2rem;
     box-shadow: none;
 
+    @media (max-width: 767px) {
+        .chat-container li.chat-left,
+        .chat-container li.chat-right {
+            flex-direction: column;
+            margin-bottom: 30px;
+        }
+        .chat-container li img {
+            width: 32px;
+            height: 32px;
+        }
+        .chat-container li.chat-left .chat-avatar {
+            margin: 0 0 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        .chat-container li.chat-left .chat-hour {
+            justify-content: flex-end;
+        }
+        .chat-container li.chat-left .chat-name {
+            margin-left: 5px;
+        }
+        .chat-container li.chat-right .chat-avatar {
+            order: -1;
+            margin: 0 0 5px 0;
+            align-items: center;
+            display: flex;
+            justify-content: right;
+            flex-direction: row-reverse;
+        }
+        .chat-container li.chat-right .chat-hour {
+            justify-content: flex-start;
+            order: 2;
+        }
+        .chat-container li.chat-right .chat-name {
+            margin-right: 5px;
+        }
+        .chat-container li .chat-text {
+            font-size: .8rem;
+        }
+    }
+
     .chat-container {
         position: relative;
         padding: 1rem;
@@ -139,6 +180,15 @@
 
         .form-group {
             margin-bottom: 1rem;
+        }
+
+        @media (max-width: 767px) {
+            .users .channel p.name-time {
+                display: none;
+            }
+            .users .channel p.name-time .time {
+                display: none;
+            }
         }
 
         .users {
