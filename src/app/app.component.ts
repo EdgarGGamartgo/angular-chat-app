@@ -144,7 +144,12 @@ export class AppComponent implements OnInit {
     if (old) {
       // Find first sent msg from available messages in ascening order (oldest datetime comes first, index 0)
       const { messageId } = this.chatService.messages.getValue().find(msg => msg?.messageId) || {}
-      messageId && this.chatService.fetchMoreMessages(this.channelId.getRawValue(), messageId, old)
+      if (messageId) {
+        this.chatService.fetchMoreMessages(this.channelId.getRawValue(), messageId, old)
+      } else {
+        this.chatService.loading.next(false)
+        this.toastr.info('No messages yet')
+      }
     } else {
       // Find first sent msg from available messages in descening order (most recent datetime comes first, index 0)
       const { messageId } = this.chatService.messages
@@ -152,7 +157,12 @@ export class AppComponent implements OnInit {
         .slice()
         .sort((a, b) => b.datetime.localeCompare(a.datetime))
         .find(msg => msg?.messageId) || {}
-      messageId && this.chatService.fetchMoreMessages(this.channelId.getRawValue(), messageId, old)
+      if (messageId) {
+        this.chatService.fetchMoreMessages(this.channelId.getRawValue(), messageId, old)
+      } else {
+        this.chatService.loading.next(false)
+        this.toastr.info('No messages yet')
+      }
     }
   }
 

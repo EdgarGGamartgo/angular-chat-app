@@ -3,7 +3,7 @@
       <div class="row gutters">
           <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
               <h5 class="title">1 day chat App</h5>
-              <p>All messages will be deleted at every 00:00 UTC</p>
+              <p id="subtitle">All messages will be deleted at every 00:00 UTC</p>
           </div>
       </div>
   </div>
@@ -15,12 +15,12 @@
                       <div class="col-xl-4 col-lg-4 col-md-4 col-sm-3 col-3" style="padding-right: 0;">
                           <div class="users-container">
                               <div class="form-group">
-                                  <label for="exampleFormControlSelect1">1. Choose your user</label>
+                                  <label id="user-label" for="exampleFormControlSelect1">1. Choose your user</label>
                                   <select class="form-control" id="exampleFormControlSelect1" [formControl]="userId">
                                       <option *ngFor="let user of users;" [value]="user" [disabled]="shouldDisableOption(user)">{{ user }}</option>
                                   </select>
                               </div>
-                              <p>2. Choose your Channel</p>
+                              <p id="channel-label">2. Choose your Channel</p>
                               <ul class="users">
                                   <li
                                     *ngFor="let channel of channels;"
@@ -35,12 +35,12 @@
                       </div>
                       <div class="col-xl-8 col-lg-8 col-md-8 col-sm-9 col-9" style="padding-left: 0;">
                           <div class="selected-user">
-                              <span>{{ channelLabel }}</span>
+                              <span id="channel-header">{{ channelLabel }}</span>
                           </div>
                           <div class="chat-container">
                               <ul class="chat-box chatContainerScroll">
                                   <li class="chat-left">
-                                      <button type="button" class="btn btn-info" (click)="fetchMoreMessages(true)">
+                                      <button type="button" class="btn btn-info" (click)="fetchMoreMessages(true)" [disabled]="!channelId.getRawValue()">
                                           Read More <i class="fa fa-arrow-up"></i>
                                       </button>
                                   </li>
@@ -67,7 +67,7 @@
                                     </ng-template>
                                   </li>
                                   <li class="left">
-                                      <button type="button" class="btn btn-info" (click)="fetchMoreMessages()">
+                                      <button type="button" class="btn btn-info" [disabled]="!channelId.getRawValue()" (click)="fetchMoreMessages()">
                                           Read More <i class="fa fa-arrow-down"></i>
                                       </button>
                                   </li>
